@@ -62,7 +62,7 @@ public class Utils {
 	 *           empty; and, negative values for {@code min}, allowing the original array to extend
 	 *           past twice it's length.
 	 */
-	public static boolean[] extendArray(final boolean[][] old, final int min) {
+	public static boolean[][] extendArray(final boolean[][] old, final int min) {
 		final var extensionLength = Math.max(1, old.length - min);
 		final var extension = new boolean[extensionLength][];
 
