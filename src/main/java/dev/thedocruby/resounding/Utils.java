@@ -29,7 +29,7 @@ public class Utils {
 	}
 
 	// java's type system sucks... overloading, ugh - even python could do better...
-	// an overloaded array length extender function boolean[], boolean[][], int[], int[][] {
+	// an overloaded array length extender function boolean[], boolean[][], int[], int[][]
 
 	/**
 	 * Returns an extended copy of an {@code boolean[]}, with {@code false} as a filler, twice its
