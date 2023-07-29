@@ -21,9 +21,78 @@ import java.util.stream.Collectors;
 
 public class ConfigManager {
 
+    private enum State {
+
+        INITIAL {
+
+            @Override
+            public void registerAutoConfig() {
+                holder = AutoConfig.register(ResoundingConfig.class, JanksonConfigSerializer::new);
+
+                if (Engine.env == EnvType.CLIENT) try {GuiRegistryinit.register();} catch (Throwable ignored){
+                    Engine.LOGGER.error("Failed to register config menu unwrappers. Edit config that isn't working in the config file");}
+
+                holder.registerSaveListener((holder, config) -> onSave(config));
+                holder.registerLoadListener((holder, config) -> onSave(config));
+                reload(true);
+
+                ConfigManager.state = REGISTERED;
+            }
+
+            @Override
+            public ResoundingConfig getConfig() {
+                return ConfigManager.DEFAULT;
+            }
+
+            @Override
+            public void reload(boolean load) {
+                // Do nothing
+            }
+
+            @Override
+            public void save() {
+                ConfigManager.registerAutoConfig();
+            }
+        },
+        REGISTERED {
+
+            @Override
+            public void registerAutoConfig() {
+                throw new IllegalStateException("Configuration already registered");
+            }
+            
+            @Override
+            public ResoundingConfig getConfig() {
+                return holder.getConfig();
+            }
+
+            @Override
+            public void reload(boolean load) {
+                if(load) holder.load();
+                holder.getConfig().preset.setConfig();
+                holder.save();
+            }
+
+            @Override
+            public void save() {
+                holder.save();
+            }
+        };
+
+        public abstract void registerAutoConfig();
+
+        public abstract ResoundingConfig getConfig();
+
+        public abstract void reload(boolean load);
+
+        public abstract void save();
+    }
+
     private ConfigManager() {}
 
     private static ConfigHolder<ResoundingConfig> holder;
+
+    private static State state = State.INITIAL;
 
     public static boolean resetOnReload;
 
@@ -37,33 +106,13 @@ public class ConfigManager {
         materials.materialProperties = map;
     }} : null;
 
-    public static void registerAutoConfig() {
-        if (holder != null) {throw new IllegalStateException("Configuration already registered");}
-        holder = AutoConfig.register(ResoundingConfig.class, JanksonConfigSerializer::new);
+    public static void registerAutoConfig() { state.registerAutoConfig(); }
 
-        if (Engine.env == EnvType.CLIENT) try {GuiRegistryinit.register();} catch (Throwable ignored){
-            Engine.LOGGER.error("Failed to register config menu unwrappers. Edit config that isn't working in the config file");}
+    public static ResoundingConfig getConfig() { return state.getConfig(); }
 
-        holder.registerSaveListener((holder, config) -> onSave(config));
-        holder.registerLoadListener((holder, config) -> onSave(config));
-        reload(true);
-    }
+    public static void reload(boolean load) { state.reload(load); }
 
-    public static ResoundingConfig getConfig() {
-        if (holder == null) {return DEFAULT;}
-
-        return holder.getConfig();
-    }
-
-    public static void reload(boolean load) {
-        if (holder == null) {return;}
-
-        if(load) holder.load();
-        holder.getConfig().preset.setConfig();
-        holder.save();
-    }
-
-    public static void save() { if (holder == null) {registerAutoConfig();} else {holder.save();} }
+    public static void save() { state.save(); }
 
     @Environment(EnvType.CLIENT)
     public static void handleBrokenMaterials(@NotNull ResoundingConfig c ){
