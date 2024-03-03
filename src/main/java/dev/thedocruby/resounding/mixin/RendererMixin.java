@@ -16,11 +16,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Environment(EnvType.CLIENT)
 @Mixin(DebugRenderer.class)
 public class RendererMixin {
-
-	@Inject(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider$Immediate;DDD)V", at = @At("HEAD"))
-	private void onDrawBlockOutline(MatrixStack matrices, VertexConsumerProvider.Immediate vertexConsumers, double cameraX, double cameraY, double cameraZ, CallbackInfo ci) {
-		if (!Engine.on) return;
-		Renderer.renderRays(cameraX, cameraY, cameraZ, MinecraftClient.getInstance().world);
-	}
-
+    @Inject(
+        method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider$Immediate;DDD)V",
+        at = @At("HEAD")
+    )
+    private void onDrawBlockOutline(
+        final MatrixStack matrices,
+        final VertexConsumerProvider.Immediate vertexConsumers,
+        final double cameraX,
+        final double cameraY,
+        final double cameraZ,
+        final CallbackInfo callback
+    ) {
+        if (Engine.on) {
+            Renderer.renderRays(cameraX, cameraY, cameraZ, MinecraftClient.getInstance().world);        
+        }
+    }
 }
