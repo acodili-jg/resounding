@@ -40,7 +40,9 @@ public class ConfigManager {
             try {
                 GuiRegistryinit.register();
             } catch (final Throwable ignored) {
-                Utils.LOGGER.error("Failed to register config menu unwrappers. Edit config that isn't working in the config file");
+                Utils.LOGGER.error(
+                    "Failed to register config menu unwrappers. Edit config that isn't working in the config file"
+                );
             }
         }
 
@@ -87,7 +89,9 @@ public class ConfigManager {
     }
 
     public static void handleUnstableConfig(final ResoundingConfig config) {
-        Utils.LOGGER.error("Error: Config file is not from a compatible version! Resetting the config...");
+        Utils.LOGGER.error(
+            "Error: Config file is not from a compatible version! Resetting the config..."
+        );
         resetOnReload = true;
     }
 
