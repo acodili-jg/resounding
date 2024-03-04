@@ -17,7 +17,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(DebugRenderer.class)
 public class RendererMixin {
     @Inject(
-        method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider$Immediate;DDD)V",
+        method = """
+            render(
+                Lnet/minecraft/client/util/math/MatrixStack;
+                Lnet/minecraft/client/render/VertexConsumerProvider$Immediate;
+                D
+                D
+                D
+            )V
+        """,
         at = @At("HEAD")
     )
     private void onDrawBlockOutline(
@@ -29,7 +37,7 @@ public class RendererMixin {
         final CallbackInfo callback
     ) {
         if (Engine.on) {
-            Renderer.renderRays(cameraX, cameraY, cameraZ, MinecraftClient.getInstance().world);        
+            Renderer.renderRays(cameraX, cameraY, cameraZ, MinecraftClient.getInstance().world);
         }
     }
 }
