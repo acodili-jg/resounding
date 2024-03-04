@@ -29,7 +29,7 @@ public class SoundSystemMixin {
     private SoundListener listener;
 
     @Inject(
-    	method = "play(Lnet/minecraft/client/sound/SoundInstance;)V",
+        method = "play(Lnet/minecraft/client/sound/SoundInstance;)V",
         at = @At(
             value = "FIELD",
             target = "net/minecraft/client/sound/SoundSystem.sounds : Lcom/google/common/collect/Multimap;"
@@ -91,15 +91,15 @@ public class SoundSystemMixin {
         final SoundInstance g,
         final float vec3d
     ) {
-	if (!Engine.on) { return; }
-	final var world = Engine.mc.world;
+    if (!Engine.on) { return; }
+    final var world = Engine.mc.world;
         if (world != null && world.getTime() % .srcRefrRate == 0) {
             f.run(source -> ((SourceAccessor) source).calculateReverb(g, this.listener));
             /*world
-	        .getRegistryManager()
-	        .get(Registry.BLOCK_KEY)
-	        .streamTags()
-	        .forEachOrdered(tagKey -> Engine.LOGGER.info(tagKey.registry().getValue()));*/
+            .getRegistryManager()
+            .get(Registry.BLOCK_KEY)
+            .streamTags()
+            .forEachOrdered(tagKey -> Engine.LOGGER.info(tagKey.registry().getValue()));*/
         }
     }
 }

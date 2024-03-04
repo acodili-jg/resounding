@@ -5,11 +5,11 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 
 public class ModClient implements ClientModInitializer {
-	@Override
-	public void onInitializeClient() {
-		Engine.env = EnvType.CLIENT;
-		ConfigManager.registerAutoConfig();
-		// TODO make more than debug
-		// Cache.generate(Engine.LOGGER::info);
-	}
+    @Override
+    public void onInitializeClient() {
+        Engine.env = EnvType.CLIENT;
+        ConfigManager.registerAutoConfig();
+        // TODO make more than debug
+        // Cache.generate(Engine.LOGGER::info);
+    }
 }
