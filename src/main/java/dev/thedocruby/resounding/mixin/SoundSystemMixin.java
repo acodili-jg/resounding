@@ -96,10 +96,10 @@ public class SoundSystemMixin {
         if (world != null && world.getTime() % .srcRefrRate == 0) {
             f.run(source -> ((SourceAccessor) source).calculateReverb(g, this.listener));
             /*world
-            .getRegistryManager()
-            .get(Registry.BLOCK_KEY)
-            .streamTags()
-            .forEachOrdered(tagKey -> Engine.LOGGER.info(tagKey.registry().getValue()));*/
+                .getRegistryManager()
+                .get(Registry.BLOCK_KEY)
+                .streamTags()
+                .forEachOrdered(tagKey -> Engine.LOGGER.info(tagKey.registry().getValue()));*/
         }
     }
 }
