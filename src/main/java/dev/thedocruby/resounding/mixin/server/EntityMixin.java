@@ -24,7 +24,18 @@ public class EntityMixin {
         method = "playSound",
         at = @At(
             value = "INVOKE",
-            target = "net/minecraft/world/World.playSound (Lnet/minecraft/entity/player/PlayerEntity;DDDLnet/minecraft/sound/SoundEvent;Lnet/minecraft/sound/SoundCategory;FF)V"
+            target = """
+                net/minecraft/world/World.playSound(
+                    Lnet/minecraft/entity/player/PlayerEntity;
+                    D
+                    D
+                    D
+                    Lnet/minecraft/sound/SoundEvent;
+                    Lnet/minecraft/sound/SoundCategory;
+                    F
+                    F
+                )V
+            """
         ),
         index = 2
     )
