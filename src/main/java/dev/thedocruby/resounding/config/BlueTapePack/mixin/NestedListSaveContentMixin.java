@@ -16,17 +16,43 @@ import java.util.function.Supplier;
 @SuppressWarnings("ALL")
 @Mixin(NestedListListEntry.class)
 public abstract class NestedListSaveContentMixin extends AbstractListListEntry {
-    @Shadow @Final private List<ReferenceProvider<?>> referencableEntries;
+    @Shadow
+    @Final
+    private List<ReferenceProvider<?>> referencableEntries;
 
-    public NestedListSaveContentMixin(Text fieldName, List value, boolean defaultExpanded, Supplier tooltipSupplier, Consumer saveConsumer, Supplier defaultValue, Text resetButtonKey, boolean requiresRestart, boolean deleteButtonEnabled, boolean insertInFront, BiFunction createNewCell) {
-        super(fieldName, value, defaultExpanded, tooltipSupplier, saveConsumer, defaultValue, resetButtonKey, requiresRestart, deleteButtonEnabled, insertInFront, createNewCell);
+    public NestedListSaveContentMixin(
+        final Text fieldName,
+        final List value,
+        final boolean defaultExpanded,
+        final Supplier tooltipSupplier,
+        final Consumer saveConsumer,
+        final Supplier defaultValue,
+        final Text resetButtonKey,
+        final boolean requiresRestart,
+        final boolean deleteButtonEnabled,
+        final boolean insertInFront,
+        final BiFunction createNewCell
+    ) {
+        super(
+            fieldName,
+            value,
+            defaultExpanded,
+            tooltipSupplier,
+            saveConsumer,
+            defaultValue,
+            resetButtonKey,
+            requiresRestart,
+            deleteButtonEnabled,
+            insertInFront,
+            createNewCell
+        );
     }
 
     @Override
     public void save(){
         try {
-            referencableEntries.forEach((e) -> e.provideReferenceEntry().save());
-        } catch (Exception ignored) {}
+            referencableEntries.forEach(e -> e.provideReferenceEntry().save());
+        } catch (final Exception ignored) {}
         super.save();
     }
 }
