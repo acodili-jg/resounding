@@ -1,6 +1,7 @@
 package dev.thedocruby.resounding.mixin;
 
 import dev.thedocruby.resounding.Cache;
+import dev.thedocruby.resounding.Engine;
 import dev.thedocruby.resounding.Material;
 import dev.thedocruby.resounding.raycast.Branch;
 import dev.thedocruby.resounding.toolbox.ChunkChain;
@@ -39,9 +40,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static dev.thedocruby.resounding.Cache.material;
-import static dev.thedocruby.resounding.Engine.hasLoaded;
-
 @Environment(EnvType.CLIENT)
 @Mixin(WorldChunk.class)
 public abstract class WorldChunkMixin extends Chunk implements ChunkChain {
@@ -62,7 +60,9 @@ public abstract class WorldChunkMixin extends Chunk implements ChunkChain {
 
     public Map<Long, VoxelShape> shapes = new ConcurrentHashMap<>(48);
 
-    public @NotNull Map<Long, VoxelShape> getShapes() { return shapes; }
+    public @NotNull Map<Long, VoxelShape> getShapes() {
+        return this.shapes;
+    }
 
     public @NotNull Branch[] branches = new Branch[0];
 
@@ -70,7 +70,7 @@ public abstract class WorldChunkMixin extends Chunk implements ChunkChain {
 
     @Override
     public Branch getBranch(final int y) {
-        return ArrayUtils.get(branches, y + this.yOffset, null);
+        return ArrayUtils.get(this.branches, y + this.yOffset, null);
     }
 
     public ChunkChain[]   xPlane = {null, this, null};
@@ -148,7 +148,13 @@ public abstract class WorldChunkMixin extends Chunk implements ChunkChain {
     // }
     // upon receiving a packet, initialize storage {
     @Inject(
-        method = "loadFromPacket(Lnet/minecraft/network/PacketByteBuf;Lnet/minecraft/nbt/NbtCompound;Ljava/util/function/Consumer;)V",
+        method = """
+            loadFromPacket(
+                Lnet/minecraft/network/PacketByteBuf;
+                Lnet/minecraft/nbt/NbtCompound;
+                Ljava/util/function/Consumer;
+            )V
+        """,
         at = @At("RETURN")
     )
     private void load(
@@ -163,7 +169,19 @@ public abstract class WorldChunkMixin extends Chunk implements ChunkChain {
 
     // upon creation of world, initialize storage {
     @Inject(
-        method = "<init>(Lnet/minecraft/world/World;Lnet/minecraft/util/math/ChunkPos;Lnet/minecraft/world/chunk/UpgradeData;Lnet/minecraft/world/tick/ChunkTickScheduler;Lnet/minecraft/world/tick/ChunkTickScheduler;J[Lnet/minecraft/world/chunk/ChunkSection;Lnet/minecraft/world/chunk/WorldChunk$EntityLoader;Lnet/minecraft/world/gen/chunk/BlendingData;)V",
+        method = """
+            <init>(
+                Lnet/minecraft/world/World;
+                Lnet/minecraft/util/math/ChunkPos;
+                Lnet/minecraft/world/chunk/UpgradeData;
+                Lnet/minecraft/world/tick/ChunkTickScheduler;
+                Lnet/minecraft/world/tick/ChunkTickScheduler;
+                J
+                [Lnet/minecraft/world/chunk/ChunkSection;
+                Lnet/minecraft/world/chunk/WorldChunk$EntityLoader;
+                Lnet/minecraft/world/gen/chunk/BlendingData;
+            )V
+        """,
         at = @At("RETURN")
     )
     private void create(
@@ -186,14 +204,19 @@ public abstract class WorldChunkMixin extends Chunk implements ChunkChain {
 
     // for readability
     private ChunkChain take(final int x, final int z) {
-        return (ChunkChain) world.getChunk(super.pos.x + x,super.pos.z + z,ChunkStatus.FULL,false);
+        return (ChunkChain) this.world.getChunk(
+            super.pos.x + x,
+            super.pos.z + z,
+            ChunkStatus.FULL,
+            false
+        );
     }
 
     public void initStorage() {
-        if (world == null || !world.isClient) { return; }
+        if (this.world == null || !this.world.isClient) { return; }
         //* TODO remove
-        if (!hasLoaded) {
-            hasLoaded = Cache.generate();
+        if (!Engine.hasLoaded) {
+            Engine.hasLoaded = Cache.generate();
             // return;
         }
         // */
@@ -222,7 +245,7 @@ public abstract class WorldChunkMixin extends Chunk implements ChunkChain {
                 final var air = new Branch(
                     new BlockPos(x, y, z),
                     16,
-                    material(Blocks.AIR.getDefaultState())
+                    Cache.material(Blocks.AIR.getDefaultState())
                 );
                 final var blank = new Branch(new BlockPos(x, y, z),16);
     
@@ -259,7 +282,13 @@ public abstract class WorldChunkMixin extends Chunk implements ChunkChain {
 
     // upon setting block in client, update our copy {
     @Inject(
-        method = "setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Z)Lnet/minecraft/block/BlockState;",
+        method = """
+            setBlockState(
+                Lnet/minecraft/util/math/BlockPos;
+                Lnet/minecraft/block/BlockState;
+                Z
+            )Lnet/minecraft/block/BlockState;
+        """,
         at = @At("HEAD")
     )
     private void setBlock(
@@ -268,7 +297,7 @@ public abstract class WorldChunkMixin extends Chunk implements ChunkChain {
         final boolean moved,
         final CallbackInfoReturnable<BlockState> cir
     ) {
-        if (world.isClient && this.loaded) {
+        if (this.world.isClient && this.loaded) {
             updateBlock(pos, state, moved);
         }
     }
@@ -312,10 +341,10 @@ public abstract class WorldChunkMixin extends Chunk implements ChunkChain {
         // get smallest branch at position
         final var branch = this.getBranch(pos.getY() >> 4).get(pos);
 
-        final var material = material(state);
+        final var material = Cache.material(state);
         // if block is homogenous with branch
         //* TODO remove
-        if (material.equals(branch.material)) return;
+        if (material.equals(branch.material)) { return; }
         // */
 
         // will get optimized on reload, must keep this function quick
@@ -323,4 +352,3 @@ public abstract class WorldChunkMixin extends Chunk implements ChunkChain {
         this.shapes.remove(pos.asLong());
     }
 }
-
