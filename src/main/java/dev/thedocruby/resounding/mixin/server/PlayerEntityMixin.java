@@ -14,13 +14,47 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 @Mixin(Entity.class)
 public class PlayerEntityMixin {
-
-    @Shadow @SuppressWarnings("SameReturnValue")
-    public double getEyeY(){ return 0.0d; }
-
-    @ModifyArg(method = "playSound", at = @At(value = "INVOKE", target = "net/minecraft/world/World.playSound (Lnet/minecraft/entity/player/PlayerEntity;DDDLnet/minecraft/sound/SoundEvent;Lnet/minecraft/sound/SoundCategory;FF)V"), index = 2)
-    private double EyeHeightOffsetInjector(@Nullable PlayerEntity player, double x, double y, double z, @NotNull SoundEvent sound, SoundCategory category, float volume, float pitch) {
-        return  Cache.stepPattern.matcher(sound.getId().getPath()).matches() ? y : getEyeY(); // TODO: step sounds
+    @Shadow
+    @SuppressWarnings("SameReturnValue")
+    public double getEyeY() {
+        return 0.0d;
     }
 
+    @ModifyArg(
+        method = "playSound",
+        at = @At(
+            value = "INVOKE",
+            target = """
+                net/minecraft/world/World.playSound(
+                    Lnet/minecraft/entity/player/PlayerEntity;
+                    D
+                    D
+                    D
+                    Lnet/minecraft/sound/SoundEvent;
+                    Lnet/minecraft/sound/SoundCategory;
+                    F
+                    F
+                )V
+            """
+        ),
+        index = 2
+    )
+    private double eyeHeightOffsetInjector(
+        final @Nullable PlayerEntity player,
+        final double x,
+        final double y,
+        final double z,
+        final @NotNull SoundEvent sound,
+        final SoundCategory category,
+        final float volume,
+        final float pitch
+    ) {
+        final var stepSound = Cache.stepPattern.matcher(sound.getId().getPath()).matches();
+        // TODO: step sounds
+        if (stepSound) {
+            return y;
+        } else {
+            return getEyeY();
+        }
+    }
 }
